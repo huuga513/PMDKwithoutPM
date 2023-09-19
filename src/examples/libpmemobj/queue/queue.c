@@ -9,7 +9,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <libpmemobj.h>
 
 /*The PMEMoid plays the role of a persistent pointer in a pmemobj pool. , from https://pmem.io/blog/2015/06/type-safety-macros-in-libpmemobj */
 /*typedef struct pmemoid {
