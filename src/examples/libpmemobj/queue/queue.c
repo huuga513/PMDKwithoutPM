@@ -188,57 +188,75 @@ fail(const char *msg)
 	exit(EXIT_FAILURE);
 }
 
+void splitArgs(int* pm_argc,char* pm_argv[],char* args){
+	char* t = strtok(args," ");
+	while(t){
+		++(*pm_argc);
+		pm_argv[*pm_argc] = t;
+		t= strtok(NULL," ");
+	}
+}
+
 int
 main(int argc, char *argv[])
 {
-	enum queue_op op;
-	if (argc < 3 || (op = queue_op_parse(argv[2])) == UNKNOWN_QUEUE_OP)
-		fail("usage: file-name [new <n>|show|enqueue <data>|dequeue]");
-
 	struct queue* queue = NULL;
 	size_t capacity;
+	enum queue_op op;
+	while(1){
+		int m_argc = 1;
+		char* m_argv[10];
+		char args[100];
+		printf("usage: [new <n>|show|enqueue <data>|dequeue]\n");
+		gets(args);
+		splitArgs(&m_argc,m_argv,args);
+		if (m_argc < 2 || (op = queue_op_parse(m_argv[2])) == UNKNOWN_QUEUE_OP)
+			fail("usage: [new <n>|show|enqueue <data>|dequeue]");
 
-	switch (op) {
-		case QUEUE_NEW:
-			if (argc != 4)
-				fail("missing size of the queue");
+		
 
-			char *end;
-			errno = 0;
-			capacity = strtoull(argv[3], &end, 0);
-			if (errno == ERANGE || *end != '\0')
-				fail("invalid size of the queue");
+		switch (op) {
+			case QUEUE_NEW:
+				if (m_argc != 3)
+					fail("missing size of the queue");
 
-			if (queue_new(&queue, capacity) != 0)
-				fail("failed to create a new queue");
-		break;
-		case QUEUE_ENQUEUE:
-			if (argc != 4)
-				fail("missing new entry data");
+				char *end;
+				errno = 0;
+				capacity = strtoull(m_argv[3], &end, 0);
+				if (errno == ERANGE || *end != '\0')
+					fail("invalid size of the queue");
 
-			if (queue == NULL)
-				fail("queue must exist");
+				if (queue_new(&queue, capacity) != 0)
+					fail("failed to create a new queue");
+			break;
+			case QUEUE_ENQUEUE:
+				if (m_argc != 3)
+					fail("missing new entry data");
 
-			if (queue_enqueue( queue,
-				argv[3], strlen(argv[3]) + 1) != 0)
-				fail("failed to insert new entry");
-		break;
-		case QUEUE_DEQUEUE:
-			if (queue == NULL)
-				fail("queue must exist");
+				if (queue == NULL)
+					fail("queue must exist");
 
-			if (queue_dequeue(queue) != 0)
-				fail("failed to remove entry");
-		break;
-		case QUEUE_SHOW:
-			if (queue == NULL)
-				fail("queue must exist");
+				if (queue_enqueue( queue,
+					m_argv[3], strlen(m_argv[3]) + 1) != 0)
+					fail("failed to insert new entry");
+			break;
+			case QUEUE_DEQUEUE:
+				if (queue == NULL)
+					fail("queue must exist");
 
-			queue_show(queue);
-		break;
-		default:
-			assert(0); /* unreachable */
-		break;
+				if (queue_dequeue(queue) != 0)
+					fail("failed to remove entry");
+			break;
+			case QUEUE_SHOW:
+				if (queue == NULL)
+					fail("queue must exist");
+
+				queue_show(queue);
+			break;
+			default:
+				assert(0); /* unreachable */
+			break;
+		}
 	}
 	return 0;
 }
