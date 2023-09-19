@@ -11,7 +11,17 @@
 #include <assert.h>
 #include <libpmemobj.h>
 
-POBJ_LAYOUT_BEGIN(queue);
+/*The PMEMoid plays the role of a persistent pointer in a pmemobj pool. , from https://pmem.io/blog/2015/06/type-safety-macros-in-libpmemobj */
+/*typedef struct pmemoid {
+  uint64_t pool_uuid_lo;
+  uint64_t off;
+} PMEMoid;
+it has no type, so not type safe. We use some marcos in libpmemobj to provide typed PMem points*/
+/*The libpmemobj requires a type number for each allocation. 
+Associating an unique type number for each type requires to use type numbers as separate defines or enums when using anonymous unions. 
+It could be possible to embed the type number in the anonymous union 
+but it would require to pass the type number every time the OID_TYPE() macro is used.*/
+POBJ_LAYOUT_BEGIN(queue);   
 POBJ_LAYOUT_ROOT(queue, struct root);
 POBJ_LAYOUT_TOID(queue, struct entry);
 POBJ_LAYOUT_TOID(queue, struct queue);
@@ -27,7 +37,7 @@ struct queue { /* array-based queue container */
 	size_t back; /* position of the last entry */
 
 	size_t capacity; /* size of the entries array */
-	TOID(struct entry) entries[];
+	TOID(struct entry) entries[];  //TOID: typed persistent memory point
 };
 
 struct root {
